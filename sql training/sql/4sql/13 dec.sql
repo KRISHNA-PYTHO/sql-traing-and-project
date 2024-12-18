@@ -1,55 +1,49 @@
 use shield;
-drop table avengers_enemy;
-drop table weapon;
-Delimiter //
 
-create procedure AvengerAssemble()
-begin
+DELIMITER //
 
-drop table if exists Avengers;
+CREATE PROCEDURE processavenger(IN city_name VARCHAR (30))
 
-Create table Avengers(
-ar_id int primary key auto_increment,
-f_name varchar(30),
-l_name varchar(30),
-heroic_name varchar(30),
-city varchar(30));
+BEGIN
 
-insert into Avengers(f_name,l_name,heroic_name,city)
-values('roger','steve','caption america','nyc'),
-('tony','stark','iron man',null),
-('thor','odinson','thor','nyc'),
-('peter','parker','spider man',null),
-('scott','lang','ant-man','california'),
-('stephen','strange','dr-strange','florida'),
-('james','barnes','winter soldier',null);
+DECLARE hero_name VARCHAR (30);
+DECLARE done INT DEFAULT 0;
 
-select * from Avengers;
+DECLARE avenger_cursor CURSOR FOR
+SELECT heroic_name FROM avengers WHERE city=city_name;
 
-end//
+DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
 
-delimiter ;
+OPEN avenger_cursor;
 
-call AvengerAssemble;
+heros:LOOP
+FETCH avenger_cursor INTO hero_name;
 
--- ============== in parmeter========
+IF done THEN
+LEAVE heros;
+END IF;
 
-delimiter //
+IF hero_name='caption america' THEN
+DELETE FROM avengers WHERE ar_id=2;
+END IF;
 
-create procedure getavengercity(in city_name varchar (30))
-begin
+IF hero_name='thor' THEN
+UPDATE avengers
+SET city='kalyan'
+WHERE f_name='thor';
+END IF;
 
-select * from Avengers where city = city_name;
+END LOOP;
+ 
+CLOSE avenger_cursor;
 
-end//
+END //
 
-delimiter ;
+DELIMITER ;
 
-call getavengercity ('nyc');
+CALL processavenger('nyc');
 
--- ====================out parmeter====================
+SELECT * FROM avengers; 
 
-delimiter //
 
-create procedure countavenger(in city_name varchar(30),out avenger_count
 
